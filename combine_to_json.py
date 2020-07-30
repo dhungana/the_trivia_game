@@ -12,7 +12,7 @@ def get_data():
                 if line == '':
                     if 'text' in current and 'correct_answer' in current:
                         choices = [current[x] for x in list(current.keys()) if 'choice' in x]
-                        if current['correct_answer'] in choices:
+                        if len(choices) in [2,4] and current['correct_answer'] in choices:
                             data.append(current)
                         current = {}
                         choice = 1
