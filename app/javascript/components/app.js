@@ -3,6 +3,8 @@ import consumer from "../channels/consumer"
 import "../style/app.css"
 import CreateGame from './createGame'
 import Games from './games'
+import WaitingRoom from './waitingRoom'
+import { Button, Modal } from 'react-bootstrap'
 
 const Heading = () => (
   <div>
@@ -12,9 +14,10 @@ const Heading = () => (
 )
 
 const App = () => {
-  const [currentGame, setCurrentGame] = useState(0)
+  const [waitingRoomOpen, setWaitingRoomOpen] = useState(false)
   const [gameStarted, setGameStarted] = useState(false)
   const [games, setGames] = useState([])
+  const [game, setGame] = useState({})
 
   const activeGamesChannel = consumer.subscriptions.create({channel: "ActiveGamesChannel"}, {
     received: function(data) {
@@ -24,16 +27,12 @@ const App = () => {
     }
   })
 
-  const joinGame = (game_id) => {
-    consumer.subscriptions.create({channel: "GameChannel", game_id: game_id}, {
-      connected: function() {
-        setCurrentGame(game_id)
-      },
+  const joinGame = (game_id, nickname) => {
+    consumer.subscriptions.create({channel: "GameChannel", game_id: game_id, nickname: nickname}, {
       received: function(data) {
-        if ('games' in data) {
-          // setGames(data.games)
-        } else if ('game_id' in data) {
-          // joinGame(data['game_id'])
+        if ('status' in data && data['status'] == 'waiting') {
+          setGame(data['game'])
+          setWaitingRoomOpen(true)
         }
       }
     })
@@ -47,7 +46,10 @@ const App = () => {
       if ('games' in data) {
         setGames(data.games)
       } else if ('game_id' in data) {
-        joinGame(data['game_id'])
+        joinGame(data['game_id'], data['nickname'])
+      } else if ('status' in data && data['status'] == 'waiting') {
+        setGame(data['game'])
+        setWaitingRoomOpen(true)
       }
     }
   })
@@ -55,8 +57,10 @@ const App = () => {
   return (
     <div>
       <Heading />
-      {gameStarted === false ? <CreateGame playerChannel={playerChannel}/> : null}
-      {gameStarted === false && games.length > 0 ? <Games games={games} joinGame={joinGame}/> : null}
+      {!waitingRoomOpen && !gameStarted ? <CreateGame playerChannel={playerChannel}/> : null}
+      {!waitingRoomOpen && !gameStarted && games.length > 0 ?
+        <Games games={games} joinGame={joinGame}/> : null}
+      {waitingRoomOpen ? <WaitingRoom game={game} /> : null}
     </div>
     )
 }

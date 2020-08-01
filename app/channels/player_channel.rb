@@ -17,12 +17,13 @@ class PlayerChannel < ApplicationCable::Channel
   end
 
   def create_game(data)
-    player = Player.new(nickname: data["nickname"])
+    player = Player.find_by(uuid: uuid)
+    player.nickname = data["nickname"]
     player.save
     game = Game.new(name: data["game_name"], started_by: player, total_players_num: data["total_players_num"],
                     has_started: false, winner_found: false, game_ended: false)
     if game.save
-      ActionCable.server.broadcast "player_#{uuid}", {game_id: game.id}
+      ActionCable.server.broadcast "player_#{uuid}", {game_id: game.id, nickname: data["nickname"]}
     else
       ActionCable.server.broadcast "player_#{uuid}", {error: "Game could not be saved"}
     end
