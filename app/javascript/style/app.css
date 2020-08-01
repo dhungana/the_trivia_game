@@ -1,0 +1,11 @@
+h1 {
+  padding: 10px;
+}
+
+.createGameButton {
+  text-align: center;
+}
+
+table, th, td {
+  padding: 10px;
+}
