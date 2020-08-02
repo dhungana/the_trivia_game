@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import consumer from "../channels/consumer"
 import "../style/app.css"
 import CreateGame from './createGame'
@@ -24,18 +24,54 @@ const App = () => {
   const [game, setGame] = useState({})
   const [question, setQuestion] = useState({})
   const [currentAnswer, setCurrentAnswer] = useState('')
-  const [gameChannel, setGameChannel] = useState(null)
+  const [result, setResult] = useState('')
+  const [gameChannel, setGameChannel] = useState({})
+  const [playerChannel, setPlayerChannel] = useState({})
 
-  const activeGamesChannel = consumer.subscriptions.create({channel: "ActiveGamesChannel"}, {
-    received: function(data) {
-      if ('games' in data) {
-        setGames(data.games)
+  useEffect(() => {
+    const active_games_channel = consumer.subscriptions.create({channel: "ActiveGamesChannel"}, {
+      received: function(data) {
+        if ('games' in data) {
+          setGames(data.games)
+        }
       }
-    }
-  })
+    })
+
+    const player_channel = consumer.subscriptions.create({channel: "PlayerChannel"}, {
+      connected: function() {
+        player_channel.send({action: 'get_games'})
+      },
+      initialized: function() {
+        setPlayerChannel(this)
+      },
+      received: function(data) {
+        if ('games' in data) {
+          setGames(data.games)
+        } else if ('game_id' in data) {
+          joinGame(data['game_id'], data['nickname'])
+        } else if ('status' in data && data['status'] == 'result') {
+          setQuestion(data['question'])
+          setWaitingRoomOpen(false)
+          setGameStarted(true)
+          setQuestionPhase(false)
+          setResultPhase(true)
+          setResult(data['result'])
+          if (data['result'] === 'won' || data['result'] === 'eliminated') {
+            consumer.disconnect()
+          }
+        }
+      }
+    })
+  }, [])
 
   const joinGame = (game_id, nickname) => {
-    const game_channel = consumer.subscriptions.create({channel: "GameChannel", game_id: game_id, nickname: nickname}, {
+    const game_channel = consumer.subscriptions.create({channel: "GameChannel", game_id: game_id}, {
+      connected: function() {
+        game_channel.send({action: 'join_game', game_id: game_id, nickname: nickname})
+      },
+      initialized: function() {
+        setGameChannel(this)
+      },
       received: function(data) {
         if ('status' in data && data['status'] == 'question') {
           setQuestion(data['question'])
@@ -43,33 +79,14 @@ const App = () => {
           setGameStarted(true)
           setQuestionPhase(true)
           setResultPhase(false)
-        } else if ('status' in data && data['status'] == 'result') {
-          setQuestion(data['question'])
-          setWaitingRoomOpen(false)
-          setGameStarted(true)
-          setQuestionPhase(false)
-          setResultPhase(true)
-        } else if ('status' in data && data['status'] == 'waiting') {
+          setCurrentAnswer('')
+        } else if ('status' in data && data['status'] == 'waiting' && !gameStarted) {
           setGame(data['game'])
           setWaitingRoomOpen(true)
         }
       }
     })
-    setGameChannel(game_channel)
   }
-
-  const playerChannel = consumer.subscriptions.create({channel: "PlayerChannel"}, {
-    connected: function() {
-      playerChannel.send({action: 'get_games'})
-    },
-    received: function(data) {
-      if ('games' in data) {
-        setGames(data.games)
-      } else if ('game_id' in data) {
-        joinGame(data['game_id'], data['nickname'])
-      }
-    }
-  })
 
   return (
     <div>
@@ -78,8 +95,8 @@ const App = () => {
       {!waitingRoomOpen && !gameStarted && games.length > 0 ?
         <Games games={games} joinGame={joinGame}/> : null}
       {waitingRoomOpen ? <WaitingRoom game={game} /> : null}
-      {questionPhase ? <Question question={question} gameChannel={gameChannel} setCurrentAnswer={setCurrentAnswer} /> : null }
-      {resultPhase ? <Result question={question} /> : null }
+      {questionPhase ? <Question question={question} currentAnswer={currentAnswer} gameChannel={gameChannel} setCurrentAnswer={setCurrentAnswer} /> : null }
+      {resultPhase ? <Result question={question} result={result} currentAnswer={currentAnswer}/> : null }
     </div>
     )
 }

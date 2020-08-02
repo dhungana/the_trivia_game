@@ -10,7 +10,26 @@ class CreateQuestions < ActiveRecord::Migration[6.0]
       t.integer :choice4_num
       t.integer :choice5_num
       t.boolean :winner_found
-
+      t.timestamps
+    end
+    create_table :choice1s do |t|
+      t.belongs_to :question
+      t.belongs_to :player
+      t.timestamps
+    end
+    create_table :choice2s do |t|
+      t.belongs_to :question
+      t.belongs_to :player
+      t.timestamps
+    end
+    create_table :choice3s do |t|
+      t.belongs_to :question
+      t.belongs_to :player
+      t.timestamps
+    end
+    create_table :choice4s do |t|
+      t.belongs_to :question
+      t.belongs_to :player
       t.timestamps
     end
   end

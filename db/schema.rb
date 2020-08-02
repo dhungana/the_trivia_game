@@ -15,6 +15,42 @@ ActiveRecord::Schema.define(version: 2020_07_29_113449) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
+  create_table "choice1s", force: :cascade do |t|
+    t.bigint "question_id"
+    t.bigint "player_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["player_id"], name: "index_choice1s_on_player_id"
+    t.index ["question_id"], name: "index_choice1s_on_question_id"
+  end
+
+  create_table "choice2s", force: :cascade do |t|
+    t.bigint "question_id"
+    t.bigint "player_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["player_id"], name: "index_choice2s_on_player_id"
+    t.index ["question_id"], name: "index_choice2s_on_question_id"
+  end
+
+  create_table "choice3s", force: :cascade do |t|
+    t.bigint "question_id"
+    t.bigint "player_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["player_id"], name: "index_choice3s_on_player_id"
+    t.index ["question_id"], name: "index_choice3s_on_question_id"
+  end
+
+  create_table "choice4s", force: :cascade do |t|
+    t.bigint "question_id"
+    t.bigint "player_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["player_id"], name: "index_choice4s_on_player_id"
+    t.index ["question_id"], name: "index_choice4s_on_question_id"
+  end
+
   create_table "games", force: :cascade do |t|
     t.string "name"
     t.bigint "started_by_id"
