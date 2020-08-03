@@ -21,7 +21,7 @@ class GameChannel < ApplicationCable::Channel
           trivium = Trivium.offset(rand(Trivium.count)).first
           question = Question.new(position: position,
                                   trivium: trivium,
-                                  expires_at: Time.now + 10.seconds,
+                                  expires_at: Time.now + 20.seconds,
                                   choice1_num: 0,
                                   choice2_num: 0,
                                   choice3_num: 0,
@@ -34,7 +34,7 @@ class GameChannel < ApplicationCable::Channel
           question_json = JSON.parse(question.to_json(:include => {:trivium => {:only => [:text, :choice1, :choice2, :choice3, :choice4]}}))
           position += 1
           ActionCable.server.broadcast "game_#{game.id}", {status: 'question', question: question_json}
-          sleep(10.seconds)
+          sleep(20.seconds)
           game = Game.find_by(id: game.id)
           question = Question.find_by(id: question.id)
           trivium = question.trivium
@@ -87,7 +87,7 @@ class GameChannel < ApplicationCable::Channel
       question_json = JSON.parse(question.to_json(:include => :trivium))
       game_json = JSON.parse(game.to_json(:include => {:started_by => {:only => [:nickname]},
                                             :players => {:only => [:nickname]}}))
-      if trivium.correct_answer == trivium.choice1 && question.choice1.where(player: player)
+      if trivium.correct_answer == trivium.choice1 && question.choice1.find_by(player: player)
         ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'won', nickname: player.nickname, question: question_json, game: game_json}
       elsif trivium.correct_answer == trivium.choice2 && question.choice2.find_by(player: player)
         ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'won', nickname: player.nickname, question: question_json, game: game_json}
