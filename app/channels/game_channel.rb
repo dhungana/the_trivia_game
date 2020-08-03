@@ -3,12 +3,9 @@ class GameChannel < ApplicationCable::Channel
     stream_from "game_#{params[:game_id]}"
     game = Game.find_by(id: params[:game_id])
     reject if game.has_started
-  end
-
-  def join_game(data)
-    game = Game.find_by(id: data['game_id'])
+    game = Game.find_by(id: params[:game_id])
     player = Player.find_by(uuid: uuid)
-    player.nickname = data['nickname']
+    player.nickname = params[:nickname]
     player.save
     if !(game.players.exists?(player.id))
       game.players << player
@@ -21,7 +18,7 @@ class GameChannel < ApplicationCable::Channel
           trivium = Trivium.offset(rand(Trivium.count)).first
           question = Question.new(position: position,
                                   trivium: trivium,
-                                  expires_at: Time.now + 20.seconds,
+                                  expires_at: Time.now + 30.seconds,
                                   choice1_num: 0,
                                   choice2_num: 0,
                                   choice3_num: 0,
@@ -34,20 +31,43 @@ class GameChannel < ApplicationCable::Channel
           question_json = JSON.parse(question.to_json(:include => {:trivium => {:only => [:text, :choice1, :choice2, :choice3, :choice4]}}))
           position += 1
           ActionCable.server.broadcast "game_#{game.id}", {status: 'question', question: question_json}
-          sleep(20.seconds)
+          sleep(30.seconds)
           game = Game.find_by(id: game.id)
+          if game.players.length <= 1
+            game.game_ended = true
+          end
+          game.save
           question = Question.find_by(id: question.id)
           trivium = question.trivium
           question_json = JSON.parse(question.to_json(:include => :trivium))
           game_json = JSON.parse(game.to_json(:include => {:started_by => {:only => [:nickname]},
                                                 :players => {:only => [:nickname]}}))
 
-          if !question.choice1.find_by(player: player) && !question.choice2.find_by(player: player) && !question.choice3.find_by(player: player) && !question.choice4.find_by(player: player)
-            game.players.delete(player)
-            game.save
-            ActionCable.server.broadcast "player_#{uuid}", {status: 'result', result: 'eliminated', question: question_json, game: game_json}
+          for player in game.players
+            if !question.choice1.find_by(player: player) && !question.choice2.find_by(player: player) && !question.choice3.find_by(player: player) && !question.choice4.find_by(player: player)
+              ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'eliminated', question: question_json, game: game_json}
+            else
+              if question.choice1.find_by(player: player)
+                answer = trivium.choice1
+              elsif question.choice2.find_by(player: player)
+                answer = trivium.choice2
+              elsif question.choice3.find_by(player: player)
+                answer = trivium.choice3
+              elsif question.choice4.find_by(player: player)
+                answer = trivium.choice4
+              end
+              if answer == trivium.correct_answer && game.players.length == 1
+                game.winner = player
+                game.save
+                ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'won', nickname: player.nickname, question: question_json, game: game_json}
+              elsif answer == trivium.correct_answer
+                ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'progressed', question: question_json, game: game_json}
+              else
+                ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'eliminated', question: question_json, game: game_json}
+              end
+            end
           end
-          sleep(10.seconds)
+          sleep(20.seconds)
         end
       else
         games = Game.where(has_started: false, game_ended: false)
@@ -64,10 +84,9 @@ class GameChannel < ApplicationCable::Channel
   def unsubscribed
     player = Player.find_by(uuid: uuid)
     game = Game.find_by(id: params[:game_id])
-
+    game.players.destroy(player)
+    game.save()
     if game.has_started == false
-      game.players.destroy(player)
-      game.save()
       games = Game.where(has_started: false, game_ended: false)
       games_json = JSON.parse(games.to_json(:include => {:started_by => {:only => [:nickname]},
                                               :players => {:only => [:nickname]}}))
@@ -112,46 +131,26 @@ class GameChannel < ApplicationCable::Channel
     if question.expires_at > Time.now
       if answer == trivium.choice1
         choice1 = Choice1.new(question: question, player: player)
+        choice1.save
         question.choice1 << choice1
         question.choice1_num += 1
       elsif answer == trivium.choice2
         choice2 = Choice2.new(question: question, player: player)
+        choice2.save
         question.choice2 << choice2
         question.choice2_num += 1
       elsif answer == trivium.choice3
         choice3 = Choice3.new(question: question, player: player)
+        choice3.save
         question.choice3 << choice3
         question.choice3_num += 1
       elsif answer == trivium.choice4
         choice4 = Choice4.new(question: question, player: player)
+        choice4.save
         question.choice4 << choice4
         question.choice4_num += 1
       end
       question.save
-      if answer != trivium.correct_answer
-        game.players.delete(player)
-        game.save
-        game = Game.find_by(id: params[:game_id])
-        if game.players.length <= 1
-          game.game_ended = true
-        end
-        game.save
-      end
-      sleep(question.expires_at - Time.now)
-      question = Question.find_by(id: question.id)
-      game = Game.find_by(id: params[:game_id])
-      question_json = JSON.parse(question.to_json(:include => :trivium))
-      game_json = JSON.parse(game.to_json(:include => {:started_by => {:only => [:nickname]},
-                                            :players => {:only => [:nickname]}}))
-      if answer == trivium.correct_answer && game.players.length == 1
-        game.winner = player
-        game.save
-        ActionCable.server.broadcast "player_#{uuid}", {status: 'result', result: 'won', nickname: player.nickname, question: question_json, game: game_json}
-      elsif answer == trivium.correct_answer
-        ActionCable.server.broadcast "player_#{uuid}", {status: 'result', result: 'progressed', question: question_json, game: game_json}
-      else
-        ActionCable.server.broadcast "player_#{uuid}", {status: 'result', result: 'eliminated', question: question_json, game: game_json}
-      end
     end
   end
 end

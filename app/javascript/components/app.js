@@ -65,10 +65,7 @@ const App = () => {
   }, [])
 
   const joinGame = (game_id, nickname) => {
-    const game_channel = consumer.subscriptions.create({channel: "GameChannel", game_id: game_id}, {
-      connected: function() {
-        game_channel.send({action: 'join_game', game_id: game_id, nickname: nickname})
-      },
+    const game_channel = consumer.subscriptions.create({channel: "GameChannel", game_id: game_id, nickname: nickname}, {
       initialized: function() {
         setGameChannel(this)
       },
