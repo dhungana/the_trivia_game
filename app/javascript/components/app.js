@@ -39,6 +39,7 @@ const App = () => {
   const [result, setResult] = useState('')
   const [gameChannel, setGameChannel] = useState({})
   const [playerChannel, setPlayerChannel] = useState({})
+  const [timer, setTimer] = useState(0)
 
   useEffect(() => {
     const active_games_channel = consumer.subscriptions.create({channel: "ActiveGamesChannel"}, {
@@ -70,11 +71,18 @@ const App = () => {
           setResult(data['result'])
           if (data['result'] === 'won' || data['result'] === 'eliminated') {
             consumer.disconnect()
+          } else {
+            setTimer(10)
           }
         }
       }
     })
   }, [])
+
+  useEffect(() => {
+    const timer_ = timer > 0 && setInterval(() => setTimer(timer - 1), 1000)
+    return () => clearInterval(timer_)
+  }, [timer])
 
   const joinGame = (game_id, nickname) => {
     const game_channel = consumer.subscriptions.create({channel: "GameChannel", game_id: game_id, nickname: nickname}, {
@@ -89,6 +97,7 @@ const App = () => {
           setQuestionPhase(true)
           setResultPhase(false)
           setCurrentAnswer('')
+          setTimer(30)
         } else if ('status' in data && data['status'] == 'waiting' && !gameStarted) {
           setGame(data['game'])
           setWaitingRoomOpen(true)
@@ -105,8 +114,8 @@ const App = () => {
       {!waitingRoomOpen && !gameStarted && games.length > 0 ?
         <Games games={games} joinGame={joinGame}/> : null}
       {waitingRoomOpen ? <WaitingRoom game={game} /> : null}
-      {questionPhase ? <Question question={question} currentAnswer={currentAnswer} gameChannel={gameChannel} setCurrentAnswer={setCurrentAnswer} /> : null }
-      {resultPhase ? <Result question={question} result={result} currentAnswer={currentAnswer}/> : null }
+      {questionPhase ? <Question question={question} currentAnswer={currentAnswer} gameChannel={gameChannel} setCurrentAnswer={setCurrentAnswer} timer={timer}/> : null }
+      {resultPhase ? <Result question={question} result={result} currentAnswer={currentAnswer} timer={timer}/> : null }
     </div>
     )
 }

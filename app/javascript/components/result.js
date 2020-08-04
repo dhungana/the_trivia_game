@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 
-const Result = ({question, result, currentAnswer}) => {
+const Result = ({question, result, currentAnswer, timer}) => {
 
   return (
     <div>
@@ -10,9 +10,19 @@ const Result = ({question, result, currentAnswer}) => {
           )
         )
       }
+      { result === 'progressed' ? (
+        <div className="center-circle">
+          <br/>
+          <div className="circle">
+            {timer}
+          </div>
+          <br/>
+        </div>
+      ): null}
       <hr/>
       <h2>{question.trivium.text}</h2>
       <br/><br/>
+
       {question.trivium.choice1 ?
       (<button id="result1" className={question.trivium.correct_answer === question.trivium.choice1 ? "btn btn-success" :
         (currentAnswer === question.trivium.choice1 ? "btn btn-danger" : "btn btn-warning")}
