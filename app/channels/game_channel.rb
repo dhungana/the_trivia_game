@@ -95,7 +95,7 @@ class GameChannel < ApplicationCable::Channel
     if (game.players.exists?(player.id))
       game.players.destroy(player)
       game.save()
-      if game.has_started == false
+      if game.has_started == false && game.player.length > 0
         games = Game.where(has_started: false, game_ended: false)
         games_json = JSON.parse(games.to_json(:include => {:started_by => {:only => [:nickname]},
                                                 :players => {:only => [:nickname]}}))
@@ -104,7 +104,7 @@ class GameChannel < ApplicationCable::Channel
         game_json = JSON.parse(game.to_json(:include => {:started_by => {:only => [:nickname]},
                                                 :players => {:only => [:nickname]}}))
         ActionCable.server.broadcast "game_#{game.id}", {status: 'waiting', game: game_json}
-      elsif game.players.length == 1
+      elsif game.has_started && game.players.length == 1
         game.game_ended = true
         game.save
         player = game.players.first
@@ -124,10 +124,14 @@ class GameChannel < ApplicationCable::Channel
         elsif trivium.correct_answer == trivium.choice4 && question.choice4.find_by(player: player)
           ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'won', nickname: player.nickname, question: question_json, game: game_json}
         end
-      elsif game.players.length == 0
+      if game.players.length == 0
         game.game_ended = true
         game.save
         stop_all_streams
+        games = Game.where(has_started: false, game_ended: false)
+        games_json = JSON.parse(games.to_json(:include => {:started_by => {:only => [:nickname]},
+                                                :players => {:only => [:nickname]}}))
+        ActionCable.server.broadcast "active_games", {games: games_json}
       end
     end
   end
