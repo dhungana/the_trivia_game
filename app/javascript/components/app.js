@@ -15,6 +15,18 @@ const Heading = () => (
   </div>
 )
 
+const TheGameDescription = () => (
+  <div>
+    <p>
+      The game consists of multiple rounds. In each round players are presented a question, a
+      choice of answers, and have to select one answer within the allotted time (30 seconds or
+      so). Players that chose a correct answer advance to the next round. Those who chose
+      the wrong answers are eliminated. The game continues until there’s only one winner left.
+    </p>
+    <hr/>
+  </div>
+)
+
 const App = () => {
   const [waitingRoomOpen, setWaitingRoomOpen] = useState(false)
   const [gameStarted, setGameStarted] = useState(false)
@@ -88,6 +100,7 @@ const App = () => {
   return (
     <div>
       <Heading />
+      {!waitingRoomOpen && !gameStarted ? <TheGameDescription/> : null}
       {!waitingRoomOpen && !gameStarted ? <CreateGame playerChannel={playerChannel}/> : null}
       {!waitingRoomOpen && !gameStarted && games.length > 0 ?
         <Games games={games} joinGame={joinGame}/> : null}

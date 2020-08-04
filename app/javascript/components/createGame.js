@@ -20,10 +20,11 @@ const CreateGame = ({playerChannel}) => {
 
   return (
     <div>
-      <div className="createGameButton">
+      <div>
         <Button variant="primary" onClick={handleShow}>
           Create Game
         </Button>
+        <hr/>
       </div>
       <Modal show={show} onHide={handleClose}>
         <form onSubmit={handleCreateGame} >

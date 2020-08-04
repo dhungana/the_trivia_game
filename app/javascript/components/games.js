@@ -14,7 +14,7 @@ const Games = ({games, joinGame}) => {
 
   return (
     <div>
-      <table>
+      <table className="center">
         <thead>
           <tr>
             <th>Name</th>
