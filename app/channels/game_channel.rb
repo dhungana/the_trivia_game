@@ -95,7 +95,7 @@ class GameChannel < ApplicationCable::Channel
     if (game.players.exists?(player.id))
       game.players.destroy(player)
       game.save()
-      if game.has_started == false && game.player.length > 0
+      if game.has_started == false && game.players.length > 0
         games = Game.where(has_started: false, game_ended: false)
         games_json = JSON.parse(games.to_json(:include => {:started_by => {:only => [:nickname]},
                                                 :players => {:only => [:nickname]}}))
@@ -124,6 +124,7 @@ class GameChannel < ApplicationCable::Channel
         elsif trivium.correct_answer == trivium.choice4 && question.choice4.find_by(player: player)
           ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'won', nickname: player.nickname, question: question_json, game: game_json}
         end
+      end
       if game.players.length == 0
         game.game_ended = true
         game.save
