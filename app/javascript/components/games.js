@@ -40,7 +40,8 @@ const Games = ({games, joinGame}) => {
       </table>
       <Modal show={show} onHide={handleClose}>
         <form onSubmit={(event) => {event.preventDefault();
-                                      joinGame(gameToJoin.id, nickname)}} >
+                                      joinGame(gameToJoin.id, nickname);
+                                      handleClose()}} >
           <Modal.Header closeButton>
             <Modal.Title>Join Game</Modal.Title>
           </Modal.Header>

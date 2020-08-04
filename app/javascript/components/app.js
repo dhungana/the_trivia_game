@@ -15,6 +15,12 @@ const Heading = () => (
   </div>
 )
 
+const ErrorMessage = ({errorMessage}) => (
+  <div className="alert alert-danger" role="alert">
+    {errorMessage}
+  </div>
+)
+
 const TheGameDescription = () => (
   <div>
     <p>
@@ -40,6 +46,7 @@ const App = () => {
   const [gameChannel, setGameChannel] = useState({})
   const [playerChannel, setPlayerChannel] = useState({})
   const [timer, setTimer] = useState(0)
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     const active_games_channel = consumer.subscriptions.create({channel: "ActiveGamesChannel"}, {
@@ -74,6 +81,8 @@ const App = () => {
           } else {
             setTimer(10)
           }
+        } else if ('error' in data) {
+          setErrorMessage(data['error'])
         }
       }
     })
@@ -83,6 +92,11 @@ const App = () => {
     const timer_ = timer > 0 && setInterval(() => setTimer(timer - 1), 1000)
     return () => clearInterval(timer_)
   }, [timer])
+
+  useEffect(() => {
+    const errorMessage_ = errorMessage !== '' && setInterval(() => setErrorMessage(''), 3000)
+    return () => clearInterval(errorMessage_)
+  }, [errorMessage])
 
   const joinGame = (game_id, nickname) => {
     const game_channel = consumer.subscriptions.create({channel: "GameChannel", game_id: game_id, nickname: nickname}, {
@@ -109,6 +123,7 @@ const App = () => {
   return (
     <div>
       <Heading />
+      {errorMessage === '' ? null: <ErrorMessage errorMessage={errorMessage} />}
       {!waitingRoomOpen && !gameStarted ? <TheGameDescription/> : null}
       {!waitingRoomOpen && !gameStarted ? <CreateGame playerChannel={playerChannel}/> : null}
       {!waitingRoomOpen && !gameStarted && games.length > 0 ?
