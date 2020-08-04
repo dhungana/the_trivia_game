@@ -38,7 +38,7 @@ class GameChannel < ApplicationCable::Channel
             question_json = JSON.parse(question.to_json(:include => {:trivium => {:only => [:text, :choice1, :choice2, :choice3, :choice4]}}))
             position += 1
             ActionCable.server.broadcast "game_#{game.id}", {status: 'question', question: question_json}
-            sleep(30.seconds)
+            sleep(question.expires_at - Time.now)
             game = Game.find_by(id: game.id)
             if game.players.length <= 1
               game.game_ended = true
@@ -74,7 +74,7 @@ class GameChannel < ApplicationCable::Channel
                 end
               end
             end
-            sleep(20.seconds)
+            sleep(question.expires_at - Time.now + 10.seconds)
           end
         else
           games = Game.where(has_started: false, game_ended: false)

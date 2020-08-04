@@ -47,6 +47,7 @@ const App = () => {
   const [playerChannel, setPlayerChannel] = useState({})
   const [timer, setTimer] = useState(0)
   const [errorMessage, setErrorMessage] = useState('')
+  const [nickname, setNickname] = useState('')
 
   useEffect(() => {
     const active_games_channel = consumer.subscriptions.create({channel: "ActiveGamesChannel"}, {
@@ -76,10 +77,13 @@ const App = () => {
           setQuestionPhase(false)
           setResultPhase(true)
           setResult(data['result'])
+          if (data['result'] === 'won') {
+            setNickname(data['nickname'])
+          }
           if (data['result'] === 'won' || data['result'] === 'eliminated') {
             consumer.disconnect()
           } else {
-            setTimer(10)
+            setTimer(20)
           }
         } else if ('error' in data) {
           setErrorMessage(data['error'])
@@ -130,7 +134,7 @@ const App = () => {
         <Games games={games} joinGame={joinGame}/> : null}
       {waitingRoomOpen ? <WaitingRoom game={game} /> : null}
       {questionPhase ? <Question question={question} currentAnswer={currentAnswer} gameChannel={gameChannel} setCurrentAnswer={setCurrentAnswer} timer={timer}/> : null }
-      {resultPhase ? <Result question={question} result={result} currentAnswer={currentAnswer} timer={timer}/> : null }
+      {resultPhase ? <Result question={question} result={result} currentAnswer={currentAnswer} timer={timer} nickname={nickname}/> : null }
     </div>
     )
 }
