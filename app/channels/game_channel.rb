@@ -56,14 +56,18 @@ class GameChannel < ApplicationCable::Channel
               else
                 if question.choice1.find_by(player: player)
                   answer = trivium.choice1
+                  count = question.choice1.count
                 elsif question.choice2.find_by(player: player)
                   answer = trivium.choice2
+                  count = question.choice2.count
                 elsif question.choice3.find_by(player: player)
                   answer = trivium.choice3
+                  count = question.choice3.count
                 elsif question.choice4.find_by(player: player)
                   answer = trivium.choice4
+                  count = question.choice4.count
                 end
-                if answer == trivium.correct_answer && game.players.length == 1
+                if answer == trivium.correct_answer && count == 1
                   game.winner = player
                   game.save
                   ActionCable.server.broadcast "player_#{player.uuid}", {status: 'result', result: 'won', nickname: player.nickname, question: question_json, game: game_json}
@@ -74,7 +78,7 @@ class GameChannel < ApplicationCable::Channel
                 end
               end
             end
-            sleep(question.expires_at - Time.now + 10.seconds)
+            sleep(question.expires_at - Time.now + 20.seconds)
           end
         else
           games = Game.where(has_started: false, game_ended: false)

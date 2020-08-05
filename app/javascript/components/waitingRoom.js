@@ -3,7 +3,9 @@ import React from "react"
 const WaitingRoom = ({game}) => {
   return (
     <div>
+      <div id="currentPlayers">
       Current Players: {game.players.length}/{game.total_players_num}
+      </div>
       <br/>
       <hr/>
       <br/>

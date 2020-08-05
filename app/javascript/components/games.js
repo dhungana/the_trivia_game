@@ -30,7 +30,7 @@ const Games = ({games, joinGame}) => {
                 <td>{game.started_by.nickname}</td>
                 <td>{game.players ? game.players.length : 0}/{game.total_players_num}</td>
                 <td>
-                  <Button variant="primary" onClick={() => handleShow(game)}>
+                  <Button id={"joinGame"+ game.name + Math.random.toString()}variant="primary" onClick={() => handleShow(game)}>
                     Join
                   </Button>
                 </td>
@@ -46,13 +46,13 @@ const Games = ({games, joinGame}) => {
             <Modal.Title>Join Game</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Your Nickname: <input value={nickname} onChange={(e) => setNickname(e.target.value)} required/><br/>
+            Your Nickname: <input id="joinNickname" value={nickname} onChange={(e) => setNickname(e.target.value)} required/><br/>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
               Close
             </Button>
-            <Button variant="primary" type="submit">
+            <Button id="joinSubmit" variant="primary" type="submit">
               Join
             </Button>
           </Modal.Footer>

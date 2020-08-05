@@ -21,7 +21,7 @@ const CreateGame = ({playerChannel}) => {
   return (
     <div>
       <div>
-        <Button variant="primary" onClick={handleShow}>
+        <Button id="createGameButton" variant="primary" onClick={handleShow}>
           Create Game
         </Button>
         <hr/>
@@ -32,15 +32,15 @@ const CreateGame = ({playerChannel}) => {
             <Modal.Title>Create Game</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Game Name: <input value={gameName} onChange={(e) => setGameName(e.target.value)} required/><br/>
-            Minimum Players: <input value={totalPlayersNum} onChange={(e) => setTotalPlayersNum(e.target.value)} type="number" min="2" step="1" required/><br/>
-            Your Nickname: <input value={nickname} onChange={(e) => setNickname(e.target.value)}  required/><br/>
+            Game Name: <input id="gameName" value={gameName} onChange={(e) => setGameName(e.target.value)} required/><br/>
+            Minimum Players: <input id="minimumPlayers" value={totalPlayersNum} onChange={(e) => setTotalPlayersNum(e.target.value)} type="number" min="2" step="1" required/><br/>
+            Your Nickname: <input id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)}  required/><br/>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
               Close
             </Button>
-            <Button variant="primary" type="submit">
+            <Button id="createSubmit" variant="primary" type="submit">
               Create
             </Button>
           </Modal.Footer>

@@ -3,7 +3,7 @@ import React, { useState } from "react"
 const Result = ({question, result, currentAnswer, timer, nickname}) => {
 
   return (
-    <div>
+    <div id="result">
       {result === 'won' ? (<h1>Congratulations {nickname}! You won!</h1>) : (
         result === 'progressed' ? (<h1>You progressed to the next round!</h1>) : (
           result === 'eliminated' ? (<h1>Sorry! You were eliminated!</h1> ) : null

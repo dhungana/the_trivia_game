@@ -9,7 +9,7 @@ import Result from './result'
 import { Button, Modal } from 'react-bootstrap'
 
 const Heading = () => (
-  <div className="card">
+  <div>
     <h1>The Trivia Game </h1>
     <hr/>
   </div>

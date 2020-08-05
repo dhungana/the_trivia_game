@@ -10,7 +10,7 @@ const Question = ({question, currentAnswer, setCurrentAnswer, gameChannel, timer
 
   return (
     <div>
-      <h2>{question.trivium.text}</h2>
+      <h2 id="question">{question.trivium.text}</h2>
       <br/>
       <div className="center-circle">
         <div className="circle">
