@@ -32,9 +32,9 @@ const CreateGame = ({playerChannel}) => {
             <Modal.Title>Create Game</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Game Name: <input value={gameName} onChange={(e) => setGameName(e.target.value)}/><br/>
-            Minimum Players: <input value={totalPlayersNum} onChange={(e) => setTotalPlayersNum(e.target.value)}/><br/>
-            Your Nickname: <input value={nickname} onChange={(e) => setNickname(e.target.value)}/><br/>
+            Game Name: <input value={gameName} onChange={(e) => setGameName(e.target.value)} required/><br/>
+            Minimum Players: <input value={totalPlayersNum} onChange={(e) => setTotalPlayersNum(e.target.value)} type="number" min="2" step="1" required/><br/>
+            Your Nickname: <input value={nickname} onChange={(e) => setNickname(e.target.value)}  required/><br/>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>

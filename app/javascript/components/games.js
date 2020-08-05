@@ -46,7 +46,7 @@ const Games = ({games, joinGame}) => {
             <Modal.Title>Join Game</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Your Nickname: <input value={nickname} onChange={(e) => setNickname(e.target.value)}/><br/>
+            Your Nickname: <input value={nickname} onChange={(e) => setNickname(e.target.value)} required/><br/>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
